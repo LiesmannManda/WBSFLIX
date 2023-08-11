@@ -10,11 +10,22 @@ movies_df = pd.read_csv('movies.csv')
 ratings_df = pd.read_csv('ratings.csv')
 tags_df = pd.read_csv('tags.csv')
 
-# Custom CSS for styling
+# Custom CSS for styling to resemble Netflix
 st.markdown("""
 <style>
 body {
-    background-color: #f4f4f4;
+    background-color: #181818;
+    color: #E50914;
+}
+h1 {
+    color: #E50914;
+}
+h2 {
+    color: #E50914;
+}
+.sidebar .sidebar-content {
+    background-color: #181818;
+    color: #E50914;
 }
 </style>
     """, unsafe_allow_html=True)
@@ -107,15 +118,4 @@ user_similarity = cosine_similarity(user_item_matrix)
 user_similarity_df = pd.DataFrame(user_similarity, index=user_item_matrix.index, columns=user_item_matrix.index)
 
 def predict_rating(user_id, movie_id, user_similarity_df, user_item_matrix, k=20):
-    similar_users = user_similarity_df[user_id].sort_values(ascending=False).index[1:k+1]
-    weighted_sum, sum_of_weights = 0, 0
-    for user in similar_users:
-        weighted_sum += user_similarity_df.loc[user_id, user] * user_item_matrix.loc[user, movie_id]
-        sum_of_weights += abs(user_similarity_df.loc[user_id, user])
-    if sum_of_weights == 0:
-        return 0
-    else:
-        return weighted_sum / sum_of_weights
-
-def get_top_n_recommendations_for_user(user_id, user_similarity_df, user_item_matrix, n=10):
-    unrated_movies = user_item_matrix
+    similar_users = user_similarity_df[user_id].sort_values(ascending=False).index[1
