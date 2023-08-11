@@ -1,6 +1,6 @@
 streamlit
 pandas
 numpy
-sklearn
-surprise
+scikit-learn==1.3.0
+scikit-surprise==1.1.3
 scipy
