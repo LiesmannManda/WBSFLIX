@@ -4,28 +4,32 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from surprise import Dataset, Reader, KNNBasic
 from collections import defaultdict
+from sklearn.metrics.pairwise import cosine_similarity
 
-# Load datasets with relative paths
+# Load datasets
 movies_df = pd.read_csv('movies.csv')
 ratings_df = pd.read_csv('ratings.csv')
 tags_df = pd.read_csv('tags.csv')
 
-# Custom CSS for styling to resemble Netflix
+# Content-based recommendation preparation
+top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
+movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
+movies_with_tags['tag'].fillna("", inplace=True)
+movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
+
+# Custom CSS for styling to mimic Netflix
 st.markdown("""
 <style>
 body {
-    background-color: #181818;
-    color: #E50914;
+    background-color: #000000;
+    color: #ffffff;
 }
-h1 {
-    color: #E50914;
-}
-h2 {
-    color: #E50914;
-}
-.sidebar .sidebar-content {
-    background-color: #181818;
-    color: #E50914;
+.stButton>button {
+    color: #ffffff;
+    background-color: #e50914;
+    border: none;
 }
 </style>
     """, unsafe_allow_html=True)
@@ -41,7 +45,6 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("🔍 Search Movies")
-    # Search functionality for movies
     movie_search_query = st.text_input("Search by title:", "")
     if movie_search_query:
         matching_movies = movies_df[movies_df['title'].str.contains(movie_search_query, case=False)]
@@ -53,7 +56,6 @@ with col1:
 
 with col2:
     st.subheader("🔍 Search Users")
-    # Search functionality for users
     user_search_query = st.text_input("Search by user ID:", "")
     if user_search_query:
         try:
@@ -70,6 +72,14 @@ user_item_matrix = ratings_df.pivot(index='userId', columns='movieId', values='r
 item_similarity = cosine_similarity(user_item_matrix.T)
 item_similarity_df = pd.DataFrame(item_similarity, index=user_item_matrix.columns, columns=user_item_matrix.columns)
 
+# Display top popular movies based on number of ratings
+st.subheader("Top Popular Movies")
+movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
+movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
+top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
+for index, row in top_movies.iterrows():
+    st.write(row['title'])
+
 # Collaborative Filtering Recommendations
 st.subheader("Collaborative Filtering Recommendations")
 selected_movie_title = st.selectbox("Select a movie you like:", movies_df['title'].tolist())
@@ -81,10 +91,12 @@ if selected_movie_title:
     for movie in recommended_movie_titles:
         st.write(movie)
 
-# User-Based Collaborative Filtering with Surprise
+# Prepare data for Surprise
 reader = Reader(rating_scale=(ratings_df['rating'].min(), ratings_df['rating'].max()))
 data = Dataset.load_from_df(ratings_df[['userId', 'movieId', 'rating']], reader)
 trainset = data.build_full_trainset()
+
+# User-based collaborative filtering with Surprise
 sim_options = {
     'name': 'cosine',
     'user_based': True
@@ -102,20 +114,4 @@ def get_top_n_recommendations(predictions, n=10):
     return top_n
 
 st.subheader("User-Based Collaborative Filtering Recommendations")
-selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
-if st.button("Get Recommendations for User"):
-    testset = trainset.build_anti_testset()
-    predictions = algo.test(testset)
-    top_n = get_top_n_recommendations(predictions, n=10)
-    user_recs = top_n[selected_user]
-    st.write(f"Top recommendations for user {selected_user}:")
-    for movie_id, predicted_rating in user_recs:
-        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
-        st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
-
-# User-Based Collaborative Filtering from Scratch
-user_similarity = cosine_similarity(user_item_matrix)
-user_similarity_df = pd.DataFrame(user_similarity, index=user_item_matrix.index, columns=user_item_matrix.index)
-
-def predict_rating(user_id, movie_id, user_similarity_df, user_item_matrix, k=20):
-    similar_users = user_similarity_df[user_id].sort_values(ascending=False).index[1
+selected_user = st.selectbox("Select a user
