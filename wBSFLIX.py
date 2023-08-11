@@ -4,20 +4,11 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from surprise import Dataset, Reader, KNNBasic
 from collections import defaultdict
-from sklearn.metrics.pairwise import cosine_similarity
 
 # Load datasets
 movies_df = pd.read_csv('movies.csv')
 ratings_df = pd.read_csv('ratings.csv')
 tags_df = pd.read_csv('tags.csv')
-
-# Content-based recommendation preparation
-top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
-movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
-movies_with_tags['tag'].fillna("", inplace=True)
-movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
-tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
 
 # Custom CSS for styling to mimic Netflix
 st.markdown("""
@@ -114,4 +105,13 @@ def get_top_n_recommendations(predictions, n=10):
     return top_n
 
 st.subheader("User-Based Collaborative Filtering Recommendations")
-selected_user = st.selectbox("Select a user
+selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
+if st.button("Get Recommendations for User"):
+    testset = trainset.build_anti_testset()
+    predictions = algo.test(testset)
+    top_n = get_top_n_recommendations(predictions, n=10)
+    user_recs = top_n[selected_user]
+    st.write(f"Top recommendations for user {selected_user}:")
+    for movie_id, predicted_rating in user_recs:
+        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
+        st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
