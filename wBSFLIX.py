@@ -47,11 +47,11 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
-# Display Logo
-img = Image.open("/mnt/data/wbsflix logo.png")
-st.image(img, use_column_width=True)
-
 st.title("WBSFLIX Movie Recommender")
+
+# Display the logo
+img = Image.open("wbsflix logo.png")
+st.image(img, use_column_width=True)
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
