@@ -52,6 +52,9 @@ body {
 .red-title {
     color: #E50914;
 }
+.css-17eq0hr {
+    background-color: #E50914;
+}
 </style>
     """, unsafe_allow_html=True)
 
