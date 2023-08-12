@@ -33,14 +33,6 @@ def get_poster_url(movie_data):
         return BASE_IMAGE_URL + poster_path
     return None
 
-# Display the logo with reduced size
-img = Image.open("wbsflix logo.png")
-st.image(img, width=150)  # Adjust width to your preference
-
-# Display banner image
-banner = Image.open("/mnt/data/wbs flix banner.png")
-st.image(banner, use_column_width=True)
-
 # Apply custom CSS styles
 st.markdown("""
 <style>
@@ -54,6 +46,13 @@ body {
 }
 </style>
     """, unsafe_allow_html=True)
+
+# Display the logo and banner
+img = Image.open("wbsflix logo.png")
+st.image(img, use_column_width=True)
+
+banner = Image.open("wbs flix banner.png")
+st.image(banner, use_column_width=True)
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
@@ -69,7 +68,7 @@ if movie_search_query:
         movie_data = fetch_movie_details(selected_movie)
         poster_url = get_poster_url(movie_data)
         if poster_url:
-            st.image(poster_url)
+            st.image(poster_url, use_column_width=True)
     else:
         st.write("No movies found!")
 
