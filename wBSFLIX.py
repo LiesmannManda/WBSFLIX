@@ -52,9 +52,6 @@ body {
 .red-title {
     color: #E50914;
 }
-.css-17eq0hr {
-    background-color: #E50914;
-}
 </style>
     """, unsafe_allow_html=True)
 
@@ -71,7 +68,7 @@ banner = Image.open("wbs flix banner.png")
 st.image(banner, use_column_width=True)
 
 # Sidebar with overall controls
-st.sidebar.header("Controls")
+st.sidebar.markdown("## <span class='red-title'>Controls</span>", unsafe_allow_html=True)
 st.sidebar.write("Use these controls to adjust your recommendations.")
 
 # Searching for movies
