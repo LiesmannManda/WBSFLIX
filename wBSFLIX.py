@@ -142,4 +142,6 @@ if st.button("Get Recommendations for User"):
 
 # Footer
 st.markdown(
-    "<div style='background-color: #E50914; color
+    "<div style='background-color: #E50914; color: white; padding: 10px; text-align: center;'>WBSFLIX - Movie Recommendation Platform</div>",
+    unsafe_allow_html=True
+)
