@@ -56,7 +56,7 @@ body {
 
 # Display the logo with center alignment and reduced size
 raw_github_link_for_logo = "https://raw.githubusercontent.com/LiesmannManda/WBSFLIX/30572b06dbb25dd7b94c9fa1ec3e270e3064c2d2/wbsflix%20logo.png"
-st.image(raw_github_link_for_logo, width=300, use_column_width=True)
+st.image(raw_github_link_for_logo, width=200)
 
 # Display the banner
 raw_github_link_for_banner = "https://raw.githubusercontent.com/LiesmannManda/WBSFLIX/30572b06dbb25dd7b94c9fa1ec3e270e3064c2d2/wbs%20flix%20banner.png"
@@ -108,6 +108,13 @@ if selected_movie_title:
     for movie in recommended_movie_titles:
         st.write(movie)
 
+# Popularity ranking
+st.subheader("Top Popular Movies")
+popular_movies = ratings_df.groupby('movieId')['rating'].mean().sort_values(ascending=False).head(10)
+movie_ids = popular_movies.index
+for movie_id in movie_ids:
+    st.write(movies_df[movies_df['movieId'] == movie_id]['title'].values[0])
+
 # User-Based Collaborative Filtering using Surprise library
 reader = Reader(rating_scale=(ratings_df['rating'].min(), ratings_df['rating'].max()))
 data = Dataset.load_from_df(ratings_df[['userId', 'movieId', 'rating']], reader)
@@ -140,8 +147,12 @@ if st.button("Get Recommendations for User"):
         movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
         st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
 
-# Footer
+# Additional recommendation systems can be added below...
+
+# Add a footer
 st.markdown(
-    "<div style='background-color: #E50914; color: white; padding: 10px; text-align: center;'>WBSFLIX - Movie Recommendation Platform</div>",
+    """
+    <div style='background-color: #E50914; color: white; padding: 10px; text-align: center;'>WBSFLIX - Movie Recommendation Platform By Mutale</div>
+    """,
     unsafe_allow_html=True
 )
