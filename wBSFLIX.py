@@ -52,6 +52,14 @@ st.title("WBSFLIX Movie Recommender")
 st.sidebar.header("Controls")
 st.sidebar.write("Use these controls to adjust your recommendations.")
 
+# Display top popular movies based on number of ratings
+st.subheader("Top Popular Movies")
+movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
+movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
+top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
+for index, row in top_movies.iterrows():
+    st.write(row['title'])
+
 # Searching for movies
 movie_search_query = st.sidebar.text_input("Search for a movie by title:", "")
 if movie_search_query:
