@@ -49,6 +49,9 @@ body {
     background-color: #E50914;
     color: white;
 }
+.red-title {
+    color: #E50914;
+}
 </style>
     """, unsafe_allow_html=True)
 
@@ -83,7 +86,7 @@ if movie_search_query:
         st.write("No movies found!")
 
 # Display top popular movies based on number of ratings
-st.subheader("Top Popular Movies")
+st.markdown("## <span class='red-title'>Top Popular Movies</span>", unsafe_allow_html=True)
 movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
 movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
 top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
@@ -91,7 +94,7 @@ for index, row in top_movies.iterrows():
     st.write(row['title'])
 
 # Collaborative Filtering Recommendations
-st.subheader("Collaborative Filtering Recommendations")
+st.markdown("## <span class='red-title'>Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
 selected_movie_title = st.selectbox("Select a movie you like:", movies_df['title'].tolist())
 if selected_movie_title:
     selected_movie_id = movies_df[movies_df['title'] == selected_movie_title]['movieId'].iloc[0]
@@ -105,6 +108,7 @@ if selected_movie_title:
         st.write(movie)
 
 # User-Based Collaborative Filtering using Surprise library
+st.markdown("## <span class='red-title'>User-Based Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
 reader = Reader(rating_scale=(ratings_df['rating'].min(), ratings_df['rating'].max()))
 data = Dataset.load_from_df(ratings_df[['userId', 'movieId', 'rating']], reader)
 trainset = data.build_full_trainset()
@@ -124,7 +128,6 @@ def get_top_n_recommendations(predictions, n=10):
         top_n[uid] = user_ratings[:n]
     return top_n
 
-st.subheader("User-Based Collaborative Filtering Recommendations")
 selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
 if st.button("Get Recommendations for User"):
     testset = trainset.build_anti_testset()
