@@ -50,9 +50,7 @@ body {
 
 # Display the logo and banner with center alignment and reduced size
 st.markdown(
-    "<div style='text-align: center;'>
-        <img src='data:image/png;base64,{}' style='width:50%'>
-    </div>".format(
+    "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:50%'></div>".format(
         base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
     ),
     unsafe_allow_html=True,
