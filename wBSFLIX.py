@@ -119,4 +119,19 @@ def get_top_n_recommendations(predictions, n=10):
     top_n = defaultdict(list)
     for uid, iid, true_r, est, _ in predictions:
         top_n[uid].append((iid, est))
-    for uid, user
+    for uid, user_ratings in top_n.items():
+        user_ratings.sort(key=lambda x: x[1], reverse=True)
+        top_n[uid] = user_ratings[:n]
+    return top_n
+
+st.subheader("User-Based Collaborative Filtering Recommendations")
+selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
+if st.button("Get Recommendations for User"):
+    testset = trainset.build_anti_testset()
+    predictions = algo.test(testset)
+    top_n = get_top_n_recommendations(predictions, n=10)
+    user_recs = top_n[selected_user]
+    st.write(f"Top recommendations for user {selected_user}:")
+    for movie_id, predicted_rating in user_recs:
+        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
+        st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
