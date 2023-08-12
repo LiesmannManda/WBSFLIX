@@ -45,12 +45,16 @@ body {
     color: #ffffff;
     background-color: #333333;
 }
+.stButton>button {
+    background-color: #E50914;
+    color: white;
+}
 </style>
     """, unsafe_allow_html=True)
 
 # Display the logo and banner with center alignment and reduced size
 st.markdown(
-    "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:50%'></div>".format(
+    "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:30%'></div>".format(
         base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
     ),
     unsafe_allow_html=True,
@@ -59,14 +63,6 @@ st.markdown(
 # Display the banner
 banner = Image.open("wbs flix banner.png")
 st.image(banner, use_column_width=True)
-
-# Display top popular movies based on number of ratings
-st.subheader("Top Popular Movies")
-movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
-movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
-top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
-for index, row in top_movies.iterrows():
-    st.write(row['title'])
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
@@ -86,13 +82,13 @@ if movie_search_query:
     else:
         st.write("No movies found!")
 
-# Content-based recommendation preparation
-top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
-movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
-movies_with_tags['tag'].fillna("", inplace=True)
-movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
-tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
+# Display top popular movies based on number of ratings
+st.subheader("Top Popular Movies")
+movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
+movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
+top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
+for index, row in top_movies.iterrows():
+    st.write(row['title'])
 
 # Collaborative Filtering Recommendations
 st.subheader("Collaborative Filtering Recommendations")
@@ -123,21 +119,4 @@ def get_top_n_recommendations(predictions, n=10):
     top_n = defaultdict(list)
     for uid, iid, true_r, est, _ in predictions:
         top_n[uid].append((iid, est))
-    for uid, user_ratings in top_n.items():
-        user_ratings.sort(key=lambda x: x[1], reverse=True)
-        top_n[uid] = user_ratings[:n]
-    return top_n
-
-st.subheader("User-Based Collaborative Filtering Recommendations")
-selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
-if st.button("Get Recommendations for User"):
-    testset = trainset.build_anti_testset()
-    predictions = algo.test(testset)
-    top_n = get_top_n_recommendations(predictions, n=10)
-    user_recs = top_n[selected_user]
-    st.write(f"Top recommendations for user {selected_user}:")
-    for movie_id, predicted_rating in user_recs:
-        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
-        st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
-
-# Additional recommendation systems can be added below...
+    for uid, user
