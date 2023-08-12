@@ -37,6 +37,10 @@ def get_poster_url(movie_data):
 img = Image.open("wbsflix logo.png")
 st.image(img, width=150)  # Adjust width to your preference
 
+# Display banner image
+banner = Image.open("/mnt/data/wbs flix banner.png")
+st.image(banner, use_column_width=True)
+
 # Apply custom CSS styles
 st.markdown("""
 <style>
