@@ -32,62 +32,6 @@ def get_poster_url(movie_data):
         return BASE_IMAGE_URL + poster_path
     return None
 
-# Streamlit UI
-st.title("WBSFLIX Movie Recommendations")
-
-# Search and display movies with posters
-movie_search_query = st.text_input("Search for a movie by title:", "")
-if movie_search_query:
-    matching_movies = movies_df[movies_df['title'].str.contains(movie_search_query, case=False)]
-    if not matching_movies.empty:
-        selected_movie = st.selectbox("Select a movie:", matching_movies['title'].tolist())
-        st.write(movies_df[movies_df['title'] == selected_movie])
-        movie_data = fetch_movie_details(selected_movie)
-        poster_url = get_poster_url(movie_data)
-        if poster_url:
-            st.image(poster_url)
-    else:
-        st.write("No movies found!")
-
-# Collaborative Filtering Recommendations
-st.subheader("Collaborative Filtering Recommendations")
-selected_movie_title = st.selectbox("Select a movie you like:", movies_df['title'].tolist())
-if selected_movie_title:
-    selected_movie_id = movies_df[movies_df['title'] == selected_movie_title]['movieId'].iloc[0]
-    user_item_matrix = ratings_df.pivot(index='userId', columns='movieId', values='rating').fillna(0)
-    item_similarity = cosine_similarity(user_item_matrix.T)
-    item_similarity_df = pd.DataFrame(item_similarity, index=user_item_matrix.columns, columns=user_item_matrix.columns)
-    similar_movie_ids = item_similarity_df[selected_movie_id].sort_values(ascending=False).index[1:11]
-    recommended_movie_titles = movies_df[movies_df['movieId'].isin(similar_movie_ids)]['title'].tolist()
-    st.write("Movies you might also like:")
-    for movie in recommended_movie_titles:
-        st.write(movie)
-
-# Additional recommendation systems can be added below
-
-# You can also display movie details and posters for the recommended movies using the above TMDb integration.
-
-
-
-
-
-
-
-
-
-
-import streamlit as st
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-from surprise import Dataset, Reader, KNNBasic
-from collections import defaultdict
-
-# Load datasets
-movies_df = pd.read_csv('movies.csv')
-ratings_df = pd.read_csv('ratings.csv')
-tags_df = pd.read_csv('tags.csv')
-
 # Apply custom CSS styles
 st.markdown("""
 <style>
@@ -115,47 +59,21 @@ if movie_search_query:
     if not matching_movies.empty:
         selected_movie = st.sidebar.selectbox("Select a movie:", matching_movies['title'].tolist())
         st.write(movies_df[movies_df['title'] == selected_movie])
+        movie_data = fetch_movie_details(selected_movie)
+        poster_url = get_poster_url(movie_data)
+        if poster_url:
+            st.image(poster_url)
     else:
         st.write("No movies found!")
-
-# Searching for users
-user_search_query = st.sidebar.text_input("Search for a user by ID:", "")
-if user_search_query:
-    try:
-        user_id = int(user_search_query)
-        if user_id in ratings_df['userId'].unique():
-            st.write(f"User {user_id} found!")
-        else:
-            st.write("User not found!")
-    except ValueError:
-        st.write("Please enter a valid user ID!")
-
-# Content-based recommendation preparation
-top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
-movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
-movies_with_tags['tag'].fillna("", inplace=True)
-movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
-tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
-
-# Collaborative filtering preparation
-user_item_matrix = ratings_df.pivot(index='userId', columns='movieId', values='rating').fillna(0)
-item_similarity = cosine_similarity(user_item_matrix.T)
-item_similarity_df = pd.DataFrame(item_similarity, index=user_item_matrix.columns, columns=user_item_matrix.columns)
-
-# Display top popular movies based on number of ratings
-st.subheader("Top Popular Movies")
-movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
-movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
-top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
-for index, row in top_movies.iterrows():
-    st.write(row['title'])
 
 # Collaborative Filtering Recommendations
 st.subheader("Collaborative Filtering Recommendations")
 selected_movie_title = st.selectbox("Select a movie you like:", movies_df['title'].tolist())
 if selected_movie_title:
     selected_movie_id = movies_df[movies_df['title'] == selected_movie_title]['movieId'].iloc[0]
+    user_item_matrix = ratings_df.pivot(index='userId', columns='movieId', values='rating').fillna(0)
+    item_similarity = cosine_similarity(user_item_matrix.T)
+    item_similarity_df = pd.DataFrame(item_similarity, index=user_item_matrix.columns, columns=user_item_matrix.columns)
     similar_movie_ids = item_similarity_df[selected_movie_id].sort_values(ascending=False).index[1:11]
     recommended_movie_titles = movies_df[movies_df['movieId'].isin(similar_movie_ids)]['title'].tolist()
     st.write("Movies you might also like:")
@@ -193,5 +111,3 @@ if st.button("Get Recommendations for User"):
     for movie_id, predicted_rating in user_recs:
         movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
         st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
-
-
