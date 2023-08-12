@@ -147,7 +147,7 @@ if st.button("Get Recommendations for User"):
 st.markdown(
     """
     <div style="background-color: #E50914; padding: 10px; position: relative; bottom: 0; width: 100%;">
-        <h3 style="color: white; text-align: center;">WBSFLIX - 2023</h3>
+        <h3 style="color: white; text-align: center;">WBSFLIX - 2023 | App by Mutale</h3>
     </div>
     """,
     unsafe_allow_html=True
