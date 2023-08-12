@@ -33,6 +33,10 @@ def get_poster_url(movie_data):
         return BASE_IMAGE_URL + poster_path
     return None
 
+# Display the logo with reduced size
+img = Image.open("wbsflix logo.png")
+st.image(img, width=150)  # Adjust width to your preference
+
 # Apply custom CSS styles
 st.markdown("""
 <style>
@@ -46,12 +50,6 @@ body {
 }
 </style>
     """, unsafe_allow_html=True)
-
-st.title("WBSFLIX Movie Recommender")
-
-# Display the logo
-img = Image.open("wbsflix logo.png")
-st.image(img, use_column_width=True)
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
