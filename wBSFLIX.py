@@ -34,11 +34,6 @@ def get_poster_url(movie_data):
         return BASE_IMAGE_URL + poster_path
     return None
 
-# Initialize session state for ratings
-from streamlit import session_state
-if "ratings" not in session_state:
-    session_state.ratings = {}
-
 # Apply custom CSS styles
 st.markdown("""
 <style>
@@ -59,14 +54,21 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
-# Display the logo with center alignment
-st.markdown(
-    "<div style='text-align: center;'><img src='https://raw.githubusercontent.com/LiesmannManda/WBSFLIX/30572b06dbb25dd7b94c9fa1ec3e270e3064c2d2/wbsflix%20logo.png' style='width:30%'></div>",
-    unsafe_allow_html=True,
-)
+# Display the logo and banner with center alignment
+logo_url = "https://github.com/LiesmannManda/WBSFLIX/blob/30572b06dbb25dd7b94c9fa1ec3e270e3064c2d2/wbsflix%20logo.png?raw=true"
+st.markdown(f"<div style='text-align: center;'><img src='{logo_url}' style='width:30%'></div>", unsafe_allow_html=True)
 
 # Display the banner
-st.image("https://raw.githubusercontent.com/LiesmannManda/WBSFLIX/30572b06dbb25dd7b94c9fa1ec3e270e3064c2d2/wbs%20flix%20banner.png", use_column_width=True)
+banner_url = "https://github.com/LiesmannManda/WBSFLIX/blob/30572b06dbb25dd7b94c9fa1ec3e270e3064c2d2/wbs%20flix%20banner.png?raw=true"
+st.image(banner_url, use_column_width=True)
+
+# Add a centered welcome message
+st.markdown("<div style='text-align: center;'><h2>Welcome to WBSFLIX! Your personal movie recommendation platform.</h2></div>", unsafe_allow_html=True)
+
+# Initialize session state for ratings
+from streamlit import session_state
+if "ratings" not in session_state:
+    session_state.ratings = {}
 
 # Sidebar with overall controls
 st.sidebar.markdown("<h1 style='color: #E50914;'>Controls</h1>", unsafe_allow_html=True)
@@ -90,6 +92,14 @@ if movie_search_query:
         poster_url = get_poster_url(movie_data)
         if poster_url:
             st.image(poster_url)
+
+# Display the user's ratings
+if session_state.ratings:
+    st.write("## Your Ratings")
+    for movie, rating in session_state.ratings.items():
+        st.write(f"You rated {movie} as {rating}/5")
+
+# ... [Rest of your code for recommendation systems]
 
 # Content-based recommendation preparation
 top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
@@ -145,11 +155,12 @@ if st.button("Get Recommendations for User"):
         movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
         st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
 
-# Additional recommendation systems can be added below...
-
-# Add a footer
+# Footer
 st.markdown("""
-<footer style="position: absolute; bottom: 0; width: 100%; height: 60px; background-color: #E50914; text-align: center; padding: 20px;">
-    <p style="color: white; margin-bottom: 20px;">App by Mutale</p>
-</footer>
-""", unsafe_allow_html=True)
+    --- 
+    <div style='text-align: center; color: #E50914;'>
+        App by Mutale
+    </div>
+    """,
+    unsafe_allow_html=True
+)
