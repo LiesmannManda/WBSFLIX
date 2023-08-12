@@ -46,12 +46,9 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
-st.title("WBSFLIX Movie Recommender")
+st.image("/mnt/data/wbsflix logo.png", use_column_width=True)
 
-# Display logo
-with open("/mnt/data/wbsflix logo.png", "rb") as f:
-    logo_image = f.read()
-st.image(logo_image, use_column_width=True)
+st.title("WBSFLIX Movie Recommender")
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
@@ -70,14 +67,6 @@ if movie_search_query:
             st.image(poster_url)
     else:
         st.write("No movies found!")
-
-# Display top popular movies based on number of ratings
-st.subheader("Top Popular Movies")
-movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
-movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
-top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
-for index, row in top_movies.iterrows():
-    st.write(row['title'])
 
 # Collaborative Filtering Recommendations
 st.subheader("Collaborative Filtering Recommendations")
