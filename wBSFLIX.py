@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from surprise import Dataset, Reader, KNNBasic
 from collections import defaultdict
 import requests
+from PIL import Image
+import base64
 
 # Load datasets
 movies_df = pd.read_csv('movies.csv')
@@ -33,36 +34,33 @@ def get_poster_url(movie_data):
         return BASE_IMAGE_URL + poster_path
     return None
 
-# Define a basic chatbot function
-def chatbot_response(text):
-    responses = {
-        "hello": "Hi there! How can I help you with movie recommendations?",
-        "recommend a movie": "Sure! Have you tried using the recommendation feature above?",
-        "thanks": "You're welcome! Enjoy your movie time.",
-        # Add more predefined responses as needed
-    }
-    return responses.get(text.lower(), "Sorry, I didn't understand that.")
-
-# Streamlit UI customizations for Netflix theme
+# Apply custom CSS styles
 st.markdown("""
 <style>
-    body {
-        color: #E50914;
-        background-color: #111111;
-    }
-    .stTextInput input[type="text"] {
-        color: #E50914;
-        background-color: #333333;
-    }
-    .stButton>button {
-        color: #E50914;
-    }
+body {
+    color: #ffffff;
+    background-color: #111111;
+}
+.stTextInput input[type="text"] {
+    color: #ffffff;
+    background-color: #333333;
+}
 </style>
     """, unsafe_allow_html=True)
 
-# Display logo and banner
-st.image("/mnt/data/wbsflix_logo.png", width=300)
-st.image("/mnt/data/wbsflix_banner.png", use_column_width=True)
+# Display the logo and banner with center alignment and reduced size
+st.markdown(
+    "<div style='text-align: center;'>
+        <img src='data:image/png;base64,{}' style='width:50%'>
+    </div>".format(
+        base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
+    ),
+    unsafe_allow_html=True,
+)
+
+# Display the banner
+banner = Image.open("wbs flix banner.png")
+st.image(banner, use_column_width=True)
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
@@ -81,6 +79,14 @@ if movie_search_query:
             st.image(poster_url)
     else:
         st.write("No movies found!")
+
+# Content-based recommendation preparation
+top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
+movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
+movies_with_tags['tag'].fillna("", inplace=True)
+movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
 
 # Collaborative Filtering Recommendations
 st.subheader("Collaborative Filtering Recommendations")
@@ -128,9 +134,4 @@ if st.button("Get Recommendations for User"):
         movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
         st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
 
-# Chatbot UI
-st.sidebar.header("Chat with WBSFLIX Bot")
-user_input = st.sidebar.text_input("Ask something:")
-if st.sidebar.button("Send"):
-    response = chatbot_response(user_input)
-    st.sidebar.text_area("Response:", response)
+# Additional recommendation systems can be added below...
