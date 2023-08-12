@@ -46,6 +46,9 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
+# Display the logo
+st.image("/mnt/data/wbsflix logo.png", use_column_width=True)
+
 st.title("WBSFLIX Movie Recommender")
 
 # Sidebar with overall controls
