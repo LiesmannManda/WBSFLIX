@@ -45,9 +45,8 @@ body {
     color: #ffffff;
     background-color: #333333;
 }
-.stButton>button {
+.sidebar .sidebar-content {
     background-color: #E50914;
-    color: white;
 }
 .red-title {
     color: #E50914;
@@ -57,7 +56,7 @@ body {
 
 # Display the logo and banner with center alignment and reduced size
 st.markdown(
-    "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:30%'></div>".format(
+    "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:50%'></div>".format(
         base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
     ),
     unsafe_allow_html=True,
@@ -67,9 +66,16 @@ st.markdown(
 banner = Image.open("wbs flix banner.png")
 st.image(banner, use_column_width=True)
 
+# Introduction/welcome message
+st.markdown("""
+    <div style='text-align: center;'>
+        <h2>Welcome to WBSFLIX!</h2>
+        <p>Your personal movie recommendation system. Discover movies tailored just for you!</p>
+    </div>
+""", unsafe_allow_html=True)
+
 # Sidebar with overall controls
-st.sidebar.markdown("## <span class='red-title'>Controls</span>", unsafe_allow_html=True)
-st.sidebar.write("Use these controls to adjust your recommendations.")
+st.sidebar.header("Controls")
 
 # Searching for movies
 movie_search_query = st.sidebar.text_input("Search for a movie by title:", "")
@@ -84,14 +90,6 @@ if movie_search_query:
             st.image(poster_url)
     else:
         st.write("No movies found!")
-
-# Display top popular movies based on number of ratings
-st.markdown("## <span class='red-title'>Top Popular Movies</span>", unsafe_allow_html=True)
-movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
-movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
-top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
-for index, row in top_movies.iterrows():
-    st.write(row['title'])
 
 # Collaborative Filtering Recommendations
 st.markdown("## <span class='red-title'>Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
@@ -108,7 +106,6 @@ if selected_movie_title:
         st.write(movie)
 
 # User-Based Collaborative Filtering using Surprise library
-st.markdown("## <span class='red-title'>User-Based Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
 reader = Reader(rating_scale=(ratings_df['rating'].min(), ratings_df['rating'].max()))
 data = Dataset.load_from_df(ratings_df[['userId', 'movieId', 'rating']], reader)
 trainset = data.build_full_trainset()
@@ -128,6 +125,7 @@ def get_top_n_recommendations(predictions, n=10):
         top_n[uid] = user_ratings[:n]
     return top_n
 
+st.markdown("## <span class='red-title'>User-Based Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
 selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
 if st.button("Get Recommendations for User"):
     testset = trainset.build_anti_testset()
@@ -138,3 +136,25 @@ if st.button("Get Recommendations for User"):
     for movie_id, predicted_rating in user_recs:
         movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
         st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
+
+# Additional recommendation systems can be added below...
+
+# Footer
+st.markdown("""
+    <style>
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #E50914;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+        }
+    </style>
+    <div class="footer">
+        Created by [Mutale] for WBSFLIX Movie Recommender | 2023
+    </div>
+""", unsafe_allow_html=True)
