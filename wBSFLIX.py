@@ -45,11 +45,12 @@ body {
     color: #ffffff;
     background-color: #333333;
 }
-.sidebar .sidebar-content {
+.stButton>button {
+    color: #ffffff;
     background-color: #E50914;
 }
-.red-title {
-    color: #E50914;
+.sidebar .sidebar-content {
+    background-color: #111111;
 }
 </style>
     """, unsafe_allow_html=True)
@@ -57,23 +58,29 @@ body {
 # Display the logo and banner with center alignment and reduced size
 st.markdown(
     "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:50%'></div>".format(
-        base64.b64encode(open("/path/to/your/repo/folder/wbsflix_logo.png", "rb").read()).decode()
+        base64.b64encode(open("/mnt/data/wbsflix logo.png", "rb").read()).decode()
     ),
     unsafe_allow_html=True,
 )
 
 # Display the banner
-banner = Image.open("/path/to/your/repo/folder/wbs flix banner.png")
+banner = Image.open("/mnt/data/wbs flix banner.png")
 st.image(banner, use_column_width=True)
 
-# Welcome message
+# Introduction message
 st.markdown(
-    "<div style='text-align: center;'><h2>Welcome to WBSFLIX!</h2><p>Your ultimate movie recommendation platform.</p></div>",
+    """
+    <div style='text-align: center; color: #E50914;'>
+        <h2>Welcome to WBSFLIX!</h2>
+        <p>Discover movies tailored just for you. Dive in and explore!</p>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
+st.sidebar.write("Use these controls to adjust your recommendations.")
 
 # Searching for movies
 movie_search_query = st.sidebar.text_input("Search for a movie by title:", "")
@@ -89,16 +96,8 @@ if movie_search_query:
     else:
         st.write("No movies found!")
 
-# Content-based recommendation preparation
-top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
-movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
-movies_with_tags['tag'].fillna("", inplace=True)
-movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
-tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
-
 # Collaborative Filtering Recommendations
-st.markdown("## <span class='red-title'>Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
+st.markdown("<h3 style='color: #E50914;'>Collaborative Filtering Recommendations</h3>", unsafe_allow_html=True)
 selected_movie_title = st.selectbox("Select a movie you like:", movies_df['title'].tolist())
 if selected_movie_title:
     selected_movie_id = movies_df[movies_df['title'] == selected_movie_title]['movieId'].iloc[0]
@@ -111,55 +110,14 @@ if selected_movie_title:
     for movie in recommended_movie_titles:
         st.write(movie)
 
-# User-Based Collaborative Filtering using Surprise library
-reader = Reader(rating_scale=(ratings_df['rating'].min(), ratings_df['rating'].max()))
-data = Dataset.load_from_df(ratings_df[['userId', 'movieId', 'rating']], reader)
-trainset = data.build_full_trainset()
-sim_options = {
-    'name': 'cosine',
-    'user_based': True
-}
-algo = KNNBasic(sim_options=sim_options)
-algo.fit(trainset)
-
-def get_top_n_recommendations(predictions, n=10):
-    top_n = defaultdict(list)
-    for uid, iid, true_r, est, _ in predictions:
-        top_n[uid].append((iid, est))
-    for uid, user_ratings in top_n.items():
-        user_ratings.sort(key=lambda x: x[1], reverse=True)
-        top_n[uid] = user_ratings[:n]
-    return top_n
-
-st.markdown("## <span class='red-title'>User-Based Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
-selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
-if st.button("Get Recommendations for User"):
-    testset = trainset.build_anti_testset()
-    predictions = algo.test(testset)
-    top_n = get_top_n_recommendations(predictions, n=10)
-    user_recs = top_n[selected_user]
-    st.write(f"Top recommendations for user {selected_user}:")
-    for movie_id, predicted_rating in user_recs:
-        movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
-        st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
+# Additional recommendation systems can be added below...
 
 # Footer
 st.markdown(
     """
-    <style>
-    .footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #E50914;
-        color: white;
-        text-align: center;
-    }
-    </style>
-    <div class="footer">
-        <p>WBSFLIX - Powered by Streamlit & OpenAI</p>
-    </div>
+    <footer style='text-align: center; color: #ffffff; background-color: #E50914; padding: 10px;'>
+        <p>WBSFLIX © 2023 | Made with ❤️ by WBS Students</p>
+    </footer>
     """,
     unsafe_allow_html=True,
 )
