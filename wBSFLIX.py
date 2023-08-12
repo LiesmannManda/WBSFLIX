@@ -6,6 +6,7 @@ from surprise import Dataset, Reader, KNNBasic
 from collections import defaultdict
 import requests
 from PIL import Image
+import base64
 
 # Load datasets
 movies_df = pd.read_csv('movies.csv')
@@ -47,10 +48,17 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
-# Display the logo and banner
-img = Image.open("wbsflix logo.png")
-st.image(img, use_column_width=True)
+# Display the logo and banner with center alignment and reduced size
+st.markdown(
+    "<div style='text-align: center;'>
+        <img src='data:image/png;base64,{}' style='width:50%'>
+    </div>".format(
+        base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
+    ),
+    unsafe_allow_html=True,
+)
 
+# Display the banner
 banner = Image.open("wbs flix banner.png")
 st.image(banner, use_column_width=True)
 
@@ -68,17 +76,17 @@ if movie_search_query:
         movie_data = fetch_movie_details(selected_movie)
         poster_url = get_poster_url(movie_data)
         if poster_url:
-            st.image(poster_url, use_column_width=True)
+            st.image(poster_url)
     else:
         st.write("No movies found!")
 
-# Display top popular movies based on number of ratings
-st.subheader("Top Popular Movies")
-movie_ratings_count = ratings_df.groupby('movieId').size().reset_index(name='num_ratings')
-movie_ratings_count = movie_ratings_count.merge(movies_df[['movieId', 'title']], on='movieId')
-top_movies = movie_ratings_count.sort_values(by="num_ratings", ascending=False).head(10)
-for index, row in top_movies.iterrows():
-    st.write(row['title'])
+# Content-based recommendation preparation
+top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
+movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
+movies_with_tags['tag'].fillna("", inplace=True)
+movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
 
 # Collaborative Filtering Recommendations
 st.subheader("Collaborative Filtering Recommendations")
@@ -125,3 +133,5 @@ if st.button("Get Recommendations for User"):
     for movie_id, predicted_rating in user_recs:
         movie_title = movies_df[movies_df['movieId'] == movie_id]['title'].iloc[0]
         st.write(f"{movie_title} (Predicted Rating: {predicted_rating:.2f})")
+
+# Additional recommendation systems can be added below...
