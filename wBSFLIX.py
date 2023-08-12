@@ -41,43 +41,35 @@ body {
     color: #ffffff;
     background-color: #111111;
 }
-.stTextInput input[type="text"], .stButton>button {
+.stTextInput input[type="text"] {
     color: #ffffff;
+    background-color: #333333;
+}
+.stButton>button {
     background-color: #E50914;
+    color: white;
 }
-.st-h2 {
+.red-title {
     color: #E50914;
-}
-.stSidebar .sidebar-content {
-    background-color: #111111;
 }
 </style>
     """, unsafe_allow_html=True)
 
-# Display the logo with center alignment and reduced size
+# Display the logo and banner with center alignment and reduced size
 st.markdown(
     "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:30%'></div>".format(
-        base64.b64encode(open("wbsflix_logo.png", "rb").read()).decode()
+        base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
     ),
     unsafe_allow_html=True,
 )
 
 # Display the banner
-banner = Image.open("wbs_flix_banner.png")
+banner = Image.open("wbs flix banner.png")
 st.image(banner, use_column_width=True)
 
-# Add a centered welcome message
-st.markdown(
-    "<div style='text-align: center;'><h2>Welcome to WBSFLIX! Your personal movie recommendation platform.</h2></div>",
-    unsafe_allow_html=True,
-)
-
 # Sidebar with overall controls
-st.sidebar.markdown("<h1 style='color: #E50914;'>Controls</h1>", unsafe_allow_html=True)
+st.sidebar.markdown("## <span class='red-title'>Controls</span>", unsafe_allow_html=True)
 st.sidebar.write("Use these controls to adjust your recommendations.")
-
-# ... [The rest of the code remains unchanged]
-
 
 # Searching for movies
 movie_search_query = st.sidebar.text_input("Search for a movie by title:", "")
