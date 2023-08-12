@@ -46,7 +46,10 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
-st.image("/mnt/data/wbsflix logo.png", use_column_width=True)
+# Load and display logo
+with open("/mnt/data/wbsflix logo.png", "rb") as f:
+    logo_bytes = f.read()
+    st.image(logo_bytes, use_column_width=True)
 
 st.title("WBSFLIX Movie Recommender")
 
