@@ -45,19 +45,20 @@ body {
     color: #ffffff;
     background-color: #333333;
 }
-.sidebar .sidebar-content {
+.stButton>button {
+    color: #ffffff;
     background-color: #E50914;
 }
-.red-title {
-    color: #E50914;
+.stSidebar .sidebar-content {
+    background-color: #E50914;
 }
 </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # Display the logo and banner with center alignment and reduced size
 st.markdown(
     "<div style='text-align: center;'><img src='data:image/png;base64,{}' style='width:50%'></div>".format(
-        base64.b64encode(open("wbsflix logo.png", "rb").read()).decode()
+        base64.b64encode(open("wbsflix_logo.png", "rb").read()).decode()
     ),
     unsafe_allow_html=True,
 )
@@ -66,16 +67,20 @@ st.markdown(
 banner = Image.open("wbs flix banner.png")
 st.image(banner, use_column_width=True)
 
-# Introduction/welcome message
-st.markdown("""
-    <div style='text-align: center;'>
+# Welcome message
+st.markdown(
+    """
+    <div style='text-align: center; color: #E50914;'>
         <h2>Welcome to WBSFLIX!</h2>
-        <p>Your personal movie recommendation system. Discover movies tailored just for you!</p>
+        <p>Your personal movie recommendation platform. Dive in to discover amazing movies tailored just for you.</p>
     </div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
 # Sidebar with overall controls
 st.sidebar.header("Controls")
+st.sidebar.write("Use these controls to adjust your recommendations.")
 
 # Searching for movies
 movie_search_query = st.sidebar.text_input("Search for a movie by title:", "")
@@ -91,8 +96,16 @@ if movie_search_query:
     else:
         st.write("No movies found!")
 
+# Content-based recommendation preparation
+top_tags = tags_df.groupby('movieId')['tag'].apply(lambda x: ' '.join(x)).reset_index()
+movies_with_tags = movies_df.merge(top_tags, on='movieId', how='left')
+movies_with_tags['tag'].fillna("", inplace=True)
+movies_with_tags['content'] = movies_with_tags['genres'] + ' ' + movies_with_tags['tag']
+tfidf_vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf_vectorizer.fit_transform(movies_with_tags['content'])
+
 # Collaborative Filtering Recommendations
-st.markdown("## <span class='red-title'>Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
+st.subheader("Collaborative Filtering Recommendations")
 selected_movie_title = st.selectbox("Select a movie you like:", movies_df['title'].tolist())
 if selected_movie_title:
     selected_movie_id = movies_df[movies_df['title'] == selected_movie_title]['movieId'].iloc[0]
@@ -125,7 +138,7 @@ def get_top_n_recommendations(predictions, n=10):
         top_n[uid] = user_ratings[:n]
     return top_n
 
-st.markdown("## <span class='red-title'>User-Based Collaborative Filtering Recommendations</span>", unsafe_allow_html=True)
+st.subheader("User-Based Collaborative Filtering Recommendations")
 selected_user = st.selectbox("Select a user ID:", ratings_df['userId'].unique())
 if st.button("Get Recommendations for User"):
     testset = trainset.build_anti_testset()
@@ -140,21 +153,11 @@ if st.button("Get Recommendations for User"):
 # Additional recommendation systems can be added below...
 
 # Footer
-st.markdown("""
-    <style>
-        .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #E50914;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            font-size: 14px;
-        }
-    </style>
-    <div class="footer">
-        Created by [Mutale] for WBSFLIX Movie Recommender | 2023
+st.markdown(
+    """
+    <div style='background-color: #E50914; color: white; padding: 10px; text-align: center;'>
+        Made with ❤️ by WBSFLIX Team
     </div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
