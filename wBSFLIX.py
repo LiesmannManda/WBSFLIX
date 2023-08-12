@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from surprise import Dataset, Reader, KNNBasic
 from collections import defaultdict
 import requests
+from PIL import Image
 
 # Load datasets
 movies_df = pd.read_csv('movies.csv')
@@ -46,8 +47,9 @@ body {
 </style>
     """, unsafe_allow_html=True)
 
-# Display logo
-st.image("/mnt/data/wbsflix logo.png", use_column_width=True)
+# Display Logo
+img = Image.open("/mnt/data/wbsflix logo.png")
+st.image(img, use_column_width=True)
 
 st.title("WBSFLIX Movie Recommender")
 
